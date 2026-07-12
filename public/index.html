@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Table — Chess</title>
+<link rel="stylesheet" href="/css/style.css" />
+<style>
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .wrap { width: 100%; max-width: 420px; }
+  .header { text-align: center; margin-bottom: 28px; }
+  .actions { display: flex; flex-direction: column; gap: 14px; margin-top: 24px; }
+  .divider {
+    display: flex; align-items: center; gap: 12px; color: var(--muted);
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em;
+    text-transform: uppercase; margin: 22px 0;
+  }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+  .code-row { display: flex; gap: 10px; }
+  .code-input {
+    flex: 1;
+    min-width: 0;
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-align: center;
+    text-transform: uppercase;
+    padding: 12px 6px;
+    outline: none;
+  }
+  .code-input:focus { border-color: var(--brass-dim); }
+  .code-input::placeholder { color: var(--muted); letter-spacing: 0.2em; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div class="eyebrow">Local Multiplayer</div>
+      <div class="wordmark">Table<span class="accent">.</span></div>
+      <div class="rule" style="margin-left:auto;margin-right:auto;"></div>
+      <p class="hint">Chess, played across the room. Start a table on this screen, then open the address<br/>this computer prints on any tablet sharing the Wi‑Fi.</p>
+    </div>
+
+    <div class="card">
+      <div class="actions">
+        <button class="btn" id="createBtn">Start a new table</button>
+      </div>
+
+      <div class="divider">or join one</div>
+
+      <div class="code-row">
+        <input class="code-input" id="codeInput" maxlength="6" placeholder="CODE" autocomplete="off" autocapitalize="characters" />
+        <button class="btn-ghost" id="joinBtn">Join</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const toastEl = document.getElementById('toast');
+    function toast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      setTimeout(() => toastEl.classList.remove('show'), 2600);
+    }
+
+    document.getElementById('createBtn').addEventListener('click', () => {
+      window.location.href = '/game.html?action=create';
+    });
+
+    const codeInput = document.getElementById('codeInput');
+    codeInput.addEventListener('input', () => {
+      codeInput.value = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    });
+
+    function joinTable() {
+      const code = codeInput.value.trim();
+      if (code.length !== 6) {
+        toast('Enter the 6-character table code');
+        return;
+      }
+      window.location.href = `/game.html?action=join&code=${code}`;
+    }
+    document.getElementById('joinBtn').addEventListener('click', joinTable);
+    codeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') joinTable(); });
+  </script>
+</body>
+</html>

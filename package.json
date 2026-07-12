@@ -1,0 +1,17 @@
+{
+  "name": "table-chess",
+  "version": "1.0.0",
+  "description": "Local multiplayer chess platform - host on one computer, play from any tablet on the network",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "chess.js": "^1.0.0",
+    "express": "^4.19.2",
+    "ws": "^8.17.0"
+  }
+}
