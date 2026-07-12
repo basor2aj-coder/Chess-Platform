@@ -28,14 +28,26 @@ in their browser and play in real time, no app install required.
 ## Playing
 
 1. On the host computer (or any device), open the "on your network" address and
-   click **Start a new table**. A 4-character table code appears.
+   click **Start a new table**. A 6-character table code appears.
 2. On each tablet, open the same address and enter the code under **Join a
    table** — the first to join gets White, the second gets Black. Anyone
    after that joins as a spectator.
-3. Tap a piece to see its legal moves highlighted, then tap a destination
+3. Each seated player fills in a quick profile: name, an optional catchphrase,
+   and an optional avatar — either a photo uploaded from the tablet or a
+   quick finger-drawing on a built-in canvas. Once both players have done
+   this, a short "vs" intro plays on both screens (name, photo, catchphrase,
+   and piece color for each player) before the board appears. The intro
+   auto-advances after a few seconds, or either player can tap **Let's
+   play →** to skip ahead.
+4. Tap a piece to see its legal moves highlighted, then tap a destination
    square to move. Moves sync instantly to both tablets.
-4. When a game ends, either player can tap **Start new game** to reset the
-   board without leaving the table.
+5. When a game ends, either player can tap **Start new game** to reset the
+   board without leaving the table — profiles carry over, and the intro
+   plays again for the new game.
+
+A player's name/catchphrase/avatar are also remembered on that tablet's
+browser (via local storage) so returning players don't have to redraw their
+avatar every match — the form just pre-fills next time.
 
 ## Playing over the internet (remote family tournament)
 

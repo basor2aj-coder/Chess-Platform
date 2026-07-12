@@ -126,14 +126,6 @@
     pointer-events: none;
   }
 
-  .coords-file, .coords-rank {
-    position: absolute;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--brass-dim);
-    letter-spacing: 0.05em;
-  }
-
   .overlay {
     position: absolute;
     inset: 0;
@@ -194,38 +186,309 @@
   }
   .promo-choices button:hover { border-color: var(--brass); }
 
+  /* ---- Profile setup ---- */
+  #profileSetup { width: 100%; max-width: 460px; }
+  .avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 20px;
+  }
+  .avatar-preview {
+    width: 84px; height: 84px;
+    border-radius: 50%;
+    background: var(--panel-raised);
+    border: 2px solid var(--brass-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    color: var(--muted);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .field input[type="text"] {
+    width: 100%;
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    padding: 12px 14px;
+    outline: none;
+  }
+  .field input[type="text"]:focus { border-color: var(--brass-dim); }
+
+  .avatar-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .avatar-tab {
+    flex: 1;
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px;
+  }
+  .avatar-tab.active { border-color: var(--brass); color: var(--brass); }
+
+  .avatar-panel { display: none; }
+  .avatar-panel.active { display: block; }
+
+  .upload-drop {
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+    padding: 22px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .upload-drop input { display: block; margin: 10px auto 0; }
+
+  .draw-pad-wrap {
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+  }
+  #drawCanvas {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: var(--ivory);
+    border-radius: 8px;
+    touch-action: none;
+    display: block;
+  }
+  .draw-tools { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .swatch {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    padding: 0;
+  }
+  .swatch.active { border-color: var(--brass); }
+  .brush-btn {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-size: 12px;
+  }
+  .brush-btn.active { border-color: var(--brass); color: var(--brass); }
+
+  .submit-row { margin-top: 22px; }
+
+  /* ---- Intro sequence ---- */
+  #introOverlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    background-image: radial-gradient(circle at 50% 30%, rgba(201,162,75,0.08), transparent 55%);
+    z-index: 20;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    padding: 24px;
+  }
+  .intro-players {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    width: 100%;
+    max-width: 620px;
+  }
+  .intro-card {
+    flex: 1;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 24px 16px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(14px);
+    animation: cardIn 0.6s ease forwards;
+  }
+  .intro-card.left { animation-delay: 0.15s; }
+  .intro-card.right { animation-delay: 0.45s; }
+  @keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
+
+  .intro-photo {
+    width: 92px; height: 92px;
+    border-radius: 50%;
+    margin: 0 auto 14px;
+    border: 3px solid var(--brass);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    background: var(--panel-raised);
+    color: var(--muted);
+  }
+  .intro-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .intro-name { font-family: 'Fraunces', serif; font-weight: 700; font-size: 22px; margin-bottom: 6px; }
+  .intro-color-pill {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+  .intro-color-pill.white { background: var(--ivory); color: #221c10; }
+  .intro-color-pill.black { background: #100d0a; color: var(--ivory); border: 1px solid var(--line); }
+  .intro-catchphrase { color: var(--muted); font-style: italic; font-size: 14px; line-height: 1.4; min-height: 20px; }
+
+  .intro-vs {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 26px;
+    color: var(--brass);
+    opacity: 0;
+    animation: cardIn 0.5s ease forwards;
+    animation-delay: 0.35s;
+  }
+
+  #introContinueBtn { opacity: 0; animation: cardIn 0.6s ease forwards; animation-delay: 0.9s; }
+
   @media (max-width: 480px) {
     .board-frame { padding: 14px; }
     .status-pill { font-size: 14px; }
+    .intro-players { flex-direction: column; }
+    .intro-vs { order: 2; }
   }
 </style>
 </head>
 <body>
-  <div class="topbar">
-    <button class="plaque plaque-btn" id="codePlaque" title="Tap to copy">
-      <span class="plaque-label">Table</span>
-      <span class="plaque-code" id="codeText">······</span>
-    </button>
-    <span class="badge" id="colorBadge">Connecting…</span>
-  </div>
 
-  <div class="status-pill" id="statusPill">Connecting to table…</div>
-
-  <div class="board-wrap">
-    <div class="board-frame">
-      <div class="board" id="board"></div>
+  <!-- Profile setup: shown to White/Black before they've submitted a profile -->
+  <div id="profileSetup" style="display:none;">
+    <div class="header" style="text-align:center; margin-bottom: 22px;">
+      <div class="eyebrow" id="profileColorLabel">Your Profile</div>
+      <div class="wordmark" style="font-size:30px;">Introduce yourself</div>
     </div>
-    <div class="overlay" id="waitingOverlay" style="display:none;">
-      <div class="pulse-ring"></div>
-      <div>
-        <div class="eyebrow" style="margin-bottom:6px;">Waiting for opponent</div>
-        <div class="hint">Share the table code with the second player.</div>
+    <div class="card">
+      <div class="avatar-row">
+        <div class="avatar-preview" id="avatarPreview">♟</div>
+        <div class="hint">Add a name and, if you like, a photo or a quick drawing so your opponent knows who they're up against.</div>
+      </div>
+
+      <div class="field">
+        <label for="nameInput">Name</label>
+        <input type="text" id="nameInput" maxlength="24" placeholder="e.g. Aunt Carol" autocomplete="off" />
+      </div>
+
+      <div class="field">
+        <label for="catchphraseInput">Catchphrase <span style="text-transform:none;">(optional)</span></label>
+        <input type="text" id="catchphraseInput" maxlength="60" placeholder="e.g. Never lost to a pawn." autocomplete="off" />
+      </div>
+
+      <div class="field">
+        <label>Avatar <span style="text-transform:none;">(optional)</span></label>
+        <div class="avatar-tabs">
+          <button type="button" class="avatar-tab active" id="uploadTabBtn">Upload photo</button>
+          <button type="button" class="avatar-tab" id="drawTabBtn">Draw a face</button>
+        </div>
+
+        <div class="avatar-panel active" id="uploadPanel">
+          <div class="upload-drop">
+            Choose a photo from this tablet
+            <input type="file" id="photoInput" accept="image/*" capture="environment" />
+          </div>
+        </div>
+
+        <div class="avatar-panel" id="drawPanel">
+          <div class="draw-pad-wrap">
+            <canvas id="drawCanvas" width="260" height="260"></canvas>
+            <div class="draw-tools">
+              <button type="button" class="swatch active" data-color="#241d15" style="background:#241d15;"></button>
+              <button type="button" class="swatch" data-color="#b4543a" style="background:#b4543a;"></button>
+              <button type="button" class="swatch" data-color="#c9a24b" style="background:#c9a24b;"></button>
+              <button type="button" class="swatch" data-color="#7c9473" style="background:#7c9473;"></button>
+              <button type="button" class="swatch" data-color="#3d5a80" style="background:#3d5a80;"></button>
+              <button type="button" class="swatch" data-color="#ece3d2" style="background:#ece3d2; border-color: var(--line);"></button>
+              <span style="flex:1;"></span>
+              <button type="button" class="brush-btn active" id="brushThin">S</button>
+              <button type="button" class="brush-btn" id="brushThick">L</button>
+              <button type="button" class="btn-ghost" id="clearDrawBtn" style="padding:8px 12px; font-size:12px;">Clear</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="submit-row">
+        <button class="btn" id="submitProfileBtn" style="width:100%;">Take your seat</button>
       </div>
     </div>
   </div>
 
-  <div class="below">
-    <button class="btn-ghost" id="newGameBtn" style="display:none;">Start new game</button>
+  <!-- Main game area -->
+  <div id="gameArea" style="display:none; width:100%; flex-direction:column; align-items:center;">
+    <div class="topbar">
+      <button class="plaque plaque-btn" id="codePlaque" title="Tap to copy">
+        <span class="plaque-label">Table</span>
+        <span class="plaque-code" id="codeText">······</span>
+      </button>
+      <span class="badge" id="colorBadge">Connecting…</span>
+    </div>
+
+    <div class="status-pill" id="statusPill">Connecting to table…</div>
+
+    <div class="board-wrap">
+      <div class="board-frame">
+        <div class="board" id="board"></div>
+      </div>
+      <div class="overlay" id="waitingOverlay" style="display:none;">
+        <div class="pulse-ring"></div>
+        <div>
+          <div class="eyebrow" id="waitingTitle" style="margin-bottom:6px;">Waiting for opponent</div>
+          <div class="hint" id="waitingHint">Share the table code with the second player.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="below">
+      <button class="btn-ghost" id="newGameBtn" style="display:none;">Start new game</button>
+    </div>
+  </div>
+
+  <!-- Intro sequence -->
+  <div id="introOverlay">
+    <div class="eyebrow">Now Seated</div>
+    <div class="intro-players">
+      <div class="intro-card left">
+        <div class="intro-photo" id="introPhotoWhite">♔</div>
+        <div class="intro-color-pill white">White</div>
+        <div class="intro-name" id="introNameWhite">—</div>
+        <div class="intro-catchphrase" id="introCatchWhite"></div>
+      </div>
+      <div class="intro-vs">VS</div>
+      <div class="intro-card right">
+        <div class="intro-photo" id="introPhotoBlack">♚</div>
+        <div class="intro-color-pill black">Black</div>
+        <div class="intro-name" id="introNameBlack">—</div>
+        <div class="intro-catchphrase" id="introCatchBlack"></div>
+      </div>
+    </div>
+    <button class="btn" id="introContinueBtn">Let's play →</button>
   </div>
 
   <div class="modal-backdrop" id="promoModal">

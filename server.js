@@ -11,7 +11,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
-// code -> { chess, white: ws|null, black: ws|null, spectators: Set<ws> }
+// code -> { chess, white: ws|null, black: ws|null, spectators: Set<ws>, profiles: { white, black } }
 const rooms = new Map();
 
 // Letters/numbers with visually ambiguous characters removed (0/O, 1/I/L, etc.)
@@ -68,7 +68,9 @@ function broadcastState(code, lastMove = null) {
     legalMoves: status.gameOver ? {} : legalMovesMap(chess),
     inCheck: chess.isCheck(),
     lastMove,
+    moveCount: chess.history().length,
     players: { white: !!room.white, black: !!room.black },
+    profiles: room.profiles,
     ...status,
   };
   const msg = JSON.stringify(payload);
@@ -92,7 +94,13 @@ wss.on('connection', (ws) => {
 
     if (msg.type === 'create_room') {
       const code = generateCode();
-      rooms.set(code, { chess: new Chess(), white: ws, black: null, spectators: new Set() });
+      rooms.set(code, {
+        chess: new Chess(),
+        white: ws,
+        black: null,
+        spectators: new Set(),
+        profiles: { white: null, black: null },
+      });
       ws.roomCode = code;
       ws.color = 'white';
       send(ws, { type: 'joined', code, color: 'white' });
@@ -122,6 +130,27 @@ wss.on('connection', (ws) => {
       ws.color = color;
       send(ws, { type: 'joined', code, color });
       broadcastState(code);
+      return;
+    }
+
+    if (msg.type === 'set_profile') {
+      const room = rooms.get(ws.roomCode);
+      if (!room) {
+        send(ws, { type: 'error', message: 'Table not found' });
+        return;
+      }
+      if (ws.color !== 'white' && ws.color !== 'black') {
+        send(ws, { type: 'error', message: 'Spectators do not need a profile' });
+        return;
+      }
+      const name = String(msg.name || '').trim().slice(0, 24) || (ws.color === 'white' ? 'White' : 'Black');
+      const catchphrase = String(msg.catchphrase || '').trim().slice(0, 60);
+      let photo = typeof msg.photo === 'string' ? msg.photo : null;
+      if (photo && (!photo.startsWith('data:image/') || photo.length > 400000)) {
+        photo = null; // ignore malformed or oversized payloads rather than failing the whole profile
+      }
+      room.profiles[ws.color] = { name, catchphrase, photo };
+      broadcastState(ws.roomCode);
       return;
     }
 
