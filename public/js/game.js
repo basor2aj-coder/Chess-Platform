@@ -282,6 +282,10 @@
       return;
     }
     const catchphrase = catchphraseInput.value.trim();
+    if (window.containsProfanity && (containsProfanity(name) || containsProfanity(catchphrase))) {
+      toast('Please keep names and catchphrases family-friendly');
+      return;
+    }
     const profile = { name, catchphrase, photo: avatarDataUrl };
     try {
       localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));

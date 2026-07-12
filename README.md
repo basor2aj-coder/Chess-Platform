@@ -34,11 +34,14 @@ in their browser and play in real time, no app install required.
    after that joins as a spectator.
 3. Each seated player fills in a quick profile: name, an optional catchphrase,
    and an optional avatar — either a photo uploaded from the tablet or a
-   quick finger-drawing on a built-in canvas. Once both players have done
-   this, a short "vs" intro plays on both screens (name, photo, catchphrase,
-   and piece color for each player) before the board appears. The intro
-   auto-advances after a few seconds, or either player can tap **Let's
-   play →** to skip ahead.
+   quick finger-drawing on a built-in canvas. Names and catchphrases are
+   checked against a family-friendly word filter (both in the browser and on
+   the server, so it can't be skipped) — a flagged entry just asks the
+   player to try something else. Once both players have set up their
+   profile, a short "vs" intro plays on both screens (name, photo,
+   catchphrase, and piece color for each player) before the board appears.
+   The intro auto-advances after a few seconds, or either player can tap
+   **Let's play →** to skip ahead.
 4. Tap a piece to see its legal moves highlighted, then tap a destination
    square to move. Moves sync instantly to both tablets.
 5. When a game ends, either player can tap **Start new game** to reset the

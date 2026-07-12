@@ -4,6 +4,7 @@ const os = require('os');
 const path = require('path');
 const { WebSocketServer, WebSocket } = require('ws');
 const { Chess } = require('chess.js');
+const { containsProfanity } = require('./public/js/profanity.js');
 
 const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
@@ -145,6 +146,10 @@ wss.on('connection', (ws) => {
       }
       const name = String(msg.name || '').trim().slice(0, 24) || (ws.color === 'white' ? 'White' : 'Black');
       const catchphrase = String(msg.catchphrase || '').trim().slice(0, 60);
+      if (containsProfanity(name) || containsProfanity(catchphrase)) {
+        send(ws, { type: 'error', message: 'Please keep names and catchphrases family-friendly' });
+        return;
+      }
       let photo = typeof msg.photo === 'string' ? msg.photo : null;
       if (photo && (!photo.startsWith('data:image/') || photo.length > 400000)) {
         photo = null; // ignore malformed or oversized payloads rather than failing the whole profile
