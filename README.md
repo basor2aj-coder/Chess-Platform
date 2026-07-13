@@ -19,11 +19,25 @@ in their browser and play in real time, no app install required.
    ```
    npm start
    ```
-4. The terminal prints two addresses, e.g.:
+4. The terminal prints a plain address and, right below it, an `https://`
+   one on a different port, e.g.:
    ```
    On this computer:  http://localhost:3000
    On your network:   http://192.168.1.42:3000
+
+   For camera capture, use the HTTPS address instead (accept the one-time security warning):
+   On this computer:  https://localhost:3443
+   On your network:   https://192.168.1.42:3443
    ```
+   The `https://` link uses a self-signed certificate generated fresh each
+   time the server starts, so the browser will show a "connection isn't
+   private" warning the first time each tablet visits it — tap **Advanced →
+   Proceed** (wording varies by browser) to continue; this only needs to be
+   done once per tablet per server restart. Taking photos with the camera
+   during profile setup only works over this `https://` link — browsers
+   block camera access on a plain `http://` address that isn't `localhost`.
+   If nobody needs the camera feature, the plain `http://` link works fine
+   for everything else.
 
 ## Playing
 
@@ -33,8 +47,9 @@ in their browser and play in real time, no app install required.
    table** — the first to join gets White, the second gets Black. Anyone
    after that joins as a spectator.
 3. Each seated player fills in a quick profile: name, an optional catchphrase,
-   and an optional avatar — either a photo uploaded from the tablet or a
-   quick finger-drawing on a built-in canvas. Names and catchphrases are
+   and an optional avatar — either a live photo taken with the tablet's
+   camera (needs the `https://` address, see above) or a quick
+   finger-drawing on a built-in canvas. Names and catchphrases are
    checked against a family-friendly word filter (both in the browser and on
    the server, so it can't be skipped) — a flagged entry just asks the
    player to try something else. Once both players have set up their
@@ -95,22 +110,30 @@ is reasonably safe — just don't post the tunnel link anywhere public.
   active tables. Refreshing a tablet's browser will drop that player to
   spectator on rejoin (the seat isn't preserved across a hard refresh).
 - If tablets can't reach the "on your network" address, check that your
-  computer's firewall allows incoming connections on the port shown (default
-  3000), and that the tablets aren't on a guest/isolated Wi‑Fi network that
-  blocks device-to-device traffic.
-- To run on a different port: `PORT=8080 npm start`.
+  computer's firewall allows incoming connections on both ports shown
+  (default 3000 for `http://`, 3443 for `https://`), and that the tablets
+  aren't on a guest/isolated Wi‑Fi network that blocks device-to-device
+  traffic.
+- To run on different ports: `PORT=8080 HTTPS_PORT=8443 npm start`.
+- If the HTTPS listener fails to start for any reason (rare), the server
+  logs why and keeps running on plain `http://` — everything except camera
+  capture still works.
 
 ## Project layout
 
 ```
 chess-platform/
-├── server.js          # Express + WebSocket server, room + chess rules (chess.js)
+├── server.js               # Express + HTTP/HTTPS + WebSocket server, room + chess rules (chess.js)
 ├── package.json
 └── public/
-    ├── index.html      # lobby: start or join a table
-    ├── game.html        # board screen
-    ├── css/style.css
-    └── js/game.js        # board rendering + move interaction
+    ├── index.html           # lobby: start or join a table
+    ├── game.html            # board screen
+    ├── css/
+    │   ├── style.css        # shared design system (buttons, cards, the plaque)
+    │   └── game.css          # game-screen-specific styles
+    └── js/
+        ├── profanity.js      # shared name/catchphrase filter (used by both client and server)
+        └── game/             # one ES module per concern — see main.js for the entry point
 ```
 
 This is intentionally a small, self-contained foundation — additional games

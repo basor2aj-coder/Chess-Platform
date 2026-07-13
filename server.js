@@ -1,7 +1,9 @@
 const express = require('express');
 const http = require('http');
+const https = require('https');
 const os = require('os');
 const path = require('path');
+const selfsigned = require('selfsigned');
 const { WebSocketServer, WebSocket } = require('ws');
 const { Chess } = require('chess.js');
 const { containsProfanity } = require('./public/js/profanity.js');
@@ -9,8 +11,7 @@ const { containsProfanity } = require('./public/js/profanity.js');
 const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
 
-const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
+const httpServer = http.createServer(app);
 
 // code -> { chess, white: ws|null, black: ws|null, spectators: Set<ws>, profiles: { white, black } }
 const rooms = new Map();
@@ -89,7 +90,7 @@ function broadcastState(code, lastMove = null) {
   }
 }
 
-wss.on('connection', (ws) => {
+function handleConnection(ws) {
   ws.roomCode = null;
   ws.color = null;
 
@@ -237,7 +238,7 @@ wss.on('connection', (ws) => {
       broadcastState(ws.roomCode);
     }
   });
-});
+}
 
 function localAddresses() {
   const nets = os.networkInterfaces();
@@ -250,15 +251,59 @@ function localAddresses() {
   return addrs;
 }
 
+// A self-signed HTTPS listener runs alongside the plain HTTP one. Camera
+// capture (getUserMedia) requires a "secure context" -- HTTPS, or the
+// special-cased localhost -- so the LAN address on its own can't offer it.
+// Regenerated on every startup (cheap, and avoids stale IPs if the network
+// changes) rather than cached to disk, so there's no private key to manage.
+async function createHttpsServer() {
+  const altNames = [
+    { type: 2, value: 'localhost' }, // DNS
+    { type: 7, ip: '127.0.0.1' }, // IPv4
+    { type: 7, ip: '::1' }, // IPv6
+  ];
+  for (const addr of localAddresses()) {
+    altNames.push({ type: 7, ip: addr });
+  }
+  const pems = await selfsigned.generate([{ name: 'commonName', value: 'localhost' }], {
+    keySize: 2048,
+    algorithm: 'sha256',
+    extensions: [{ name: 'subjectAltName', altNames }],
+  });
+  return https.createServer({ key: pems.private, cert: pems.cert }, app);
+}
+
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, '0.0.0.0', () => {
+const HTTPS_PORT = process.env.HTTPS_PORT || 3443;
+
+(async () => {
+  new WebSocketServer({ server: httpServer }).on('connection', handleConnection);
+  httpServer.listen(PORT, '0.0.0.0');
+
+  let httpsServer = null;
+  try {
+    httpsServer = await createHttpsServer();
+    new WebSocketServer({ server: httpsServer }).on('connection', handleConnection);
+    httpsServer.listen(HTTPS_PORT, '0.0.0.0');
+  } catch (err) {
+    console.error('Could not start the HTTPS listener (camera capture will be unavailable):', err.message);
+  }
+
   console.log('');
   console.log(`  Table is running on port ${PORT}`);
   console.log(`  On this computer:  http://localhost:${PORT}`);
   for (const addr of localAddresses()) {
     console.log(`  On your network:   http://${addr}:${PORT}`);
   }
+  if (httpsServer) {
+    console.log('');
+    console.log(`  For camera capture, use the HTTPS address instead (accept the one-time security warning):`);
+    console.log(`  On this computer:  https://localhost:${HTTPS_PORT}`);
+    for (const addr of localAddresses()) {
+      console.log(`  On your network:   https://${addr}:${HTTPS_PORT}`);
+    }
+  }
   console.log('');
   console.log('  Open the "On your network" address on any tablet connected to the same Wi-Fi.');
   console.log('');
-});
+})();

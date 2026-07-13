@@ -1,9 +1,10 @@
 // The "introduce yourself" profile setup screen: name/catchphrase fields,
-// photo upload, and the drawing pad, plus submitting the profile.
+// live camera capture, and the drawing pad, plus submitting the profile.
 import { PROFILE_STORAGE_KEY } from './constants.js';
 import {
-  avatarPreview, nameInput, catchphraseInput, uploadTabBtn, drawTabBtn,
-  uploadPanel, drawPanel, photoInput, drawCanvas, clearDrawBtn,
+  avatarPreview, nameInput, catchphraseInput, cameraTabBtn, drawTabBtn,
+  cameraPanel, drawPanel, cameraVideo, cameraCaptured, cameraHint,
+  cameraEnableBtn, cameraShutterBtn, cameraRetakeBtn, drawCanvas, clearDrawBtn,
   brushThin, brushThick, submitProfileBtn,
 } from './dom.js';
 import { state, notifyStateChange } from './state.js';
@@ -38,42 +39,80 @@ function setAvatarPreview(dataUrl) {
 }
 
 // ---- Avatar tabs ----
-uploadTabBtn.addEventListener('click', () => {
-  uploadTabBtn.classList.add('active');
+cameraTabBtn.addEventListener('click', () => {
+  cameraTabBtn.classList.add('active');
   drawTabBtn.classList.remove('active');
-  uploadPanel.classList.add('active');
+  cameraPanel.classList.add('active');
   drawPanel.classList.remove('active');
 });
 drawTabBtn.addEventListener('click', () => {
   drawTabBtn.classList.add('active');
-  uploadTabBtn.classList.remove('active');
+  cameraTabBtn.classList.remove('active');
   drawPanel.classList.add('active');
-  uploadPanel.classList.remove('active');
+  cameraPanel.classList.remove('active');
+  stopCameraStream();
 });
 
-// ---- Photo upload: resize/crop to a square, downscale ----
-photoInput.addEventListener('change', () => {
-  const file = photoInput.files && photoInput.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    const img = new Image();
-    img.onload = () => {
-      const size = 260;
-      const canvas = document.createElement('canvas');
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      const scale = Math.max(size / img.width, size / img.height);
-      const w = img.width * scale;
-      const h = img.height * scale;
-      ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
-      avatarDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-      setAvatarPreview(avatarDataUrl);
-    };
-    img.src = reader.result;
-  };
-  reader.readAsDataURL(file);
+// ---- Live camera capture ----
+let cameraStream = null;
+
+function stopCameraStream() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach((track) => track.stop());
+    cameraStream = null;
+  }
+}
+
+cameraEnableBtn.addEventListener('click', async () => {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    cameraHint.textContent = window.isSecureContext
+      ? "This browser doesn't support camera access."
+      : 'Camera access needs the secure (https://) address — ask whoever set up the table for that link instead of the http:// one.';
+    return;
+  }
+  cameraEnableBtn.disabled = true;
+  cameraHint.textContent = 'Requesting camera access…';
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+    cameraVideo.srcObject = cameraStream;
+    cameraHint.style.display = 'none';
+    cameraEnableBtn.style.display = 'none';
+    cameraShutterBtn.style.display = 'block';
+  } catch (err) {
+    cameraHint.textContent = err.name === 'NotAllowedError'
+      ? 'Camera access was denied. Check your browser settings if you want to allow it.'
+      : 'Could not access a camera on this device.';
+    cameraEnableBtn.disabled = false;
+  }
+});
+
+cameraShutterBtn.addEventListener('click', () => {
+  const size = 260;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const vw = cameraVideo.videoWidth;
+  const vh = cameraVideo.videoHeight;
+  const scale = Math.max(size / vw, size / vh);
+  const w = vw * scale;
+  const h = vh * scale;
+  ctx.drawImage(cameraVideo, (size - w) / 2, (size - h) / 2, w, h);
+  avatarDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  setAvatarPreview(avatarDataUrl);
+
+  cameraCaptured.src = avatarDataUrl;
+  cameraCaptured.style.display = 'block';
+  cameraVideo.style.display = 'none';
+  cameraShutterBtn.style.display = 'none';
+  cameraRetakeBtn.style.display = 'block';
+});
+
+cameraRetakeBtn.addEventListener('click', () => {
+  cameraCaptured.style.display = 'none';
+  cameraVideo.style.display = 'block';
+  cameraRetakeBtn.style.display = 'none';
+  cameraShutterBtn.style.display = 'block';
 });
 
 // ---- Drawing pad ----
@@ -176,5 +215,6 @@ submitProfileBtn.addEventListener('click', () => {
   }
   sendMessage({ type: 'set_profile', name, catchphrase, photo: avatarDataUrl });
   state.myProfileSubmitted = true;
+  stopCameraStream();
   notifyStateChange();
 });
