@@ -37,6 +37,22 @@
   const colorBadge = document.getElementById('colorBadge');
   const capturesTop = document.getElementById('capturesTop');
   const capturesBottom = document.getElementById('capturesBottom');
+  const playerEls = {
+    white: {
+      name: document.getElementById('playerNameWhite'),
+      avatar: document.getElementById('playerAvatarWhite'),
+      glyph: document.getElementById('playerGlyphWhite'),
+      photo: document.getElementById('playerPhotoWhite'),
+      bubble: document.getElementById('speechBubbleWhite'),
+    },
+    black: {
+      name: document.getElementById('playerNameBlack'),
+      avatar: document.getElementById('playerAvatarBlack'),
+      glyph: document.getElementById('playerGlyphBlack'),
+      photo: document.getElementById('playerPhotoBlack'),
+      bubble: document.getElementById('speechBubbleBlack'),
+    },
+  };
   const waitingOverlay = document.getElementById('waitingOverlay');
   const waitingTitle = document.getElementById('waitingTitle');
   const waitingHint = document.getElementById('waitingHint');
@@ -895,8 +911,53 @@
 
   celebrationSkipBtn.addEventListener('click', stopCelebration);
 
+  // =========================================================
+  // Players row (name, color, photo + catchphrase speech bubble)
+  // =========================================================
+  function closeSpeechBubbles(exceptColor) {
+    ['white', 'black'].forEach((color) => {
+      if (color !== exceptColor) playerEls[color].bubble.classList.remove('show');
+    });
+  }
+
+  function toggleSpeechBubble(color) {
+    const { bubble } = playerEls[color];
+    const isOpen = bubble.classList.contains('show');
+    closeSpeechBubbles(null);
+    if (!isOpen) bubble.classList.add('show');
+  }
+
+  ['white', 'black'].forEach((color) => {
+    playerEls[color].avatar.addEventListener('click', (evt) => {
+      evt.stopPropagation();
+      toggleSpeechBubble(color);
+    });
+  });
+  document.addEventListener('click', () => closeSpeechBubbles(null));
+
+  function renderPlayersRow() {
+    if (!latestState) return;
+    ['white', 'black'].forEach((color) => {
+      const els = playerEls[color];
+      const profile = latestState.profiles && latestState.profiles[color];
+      els.name.textContent = (profile && profile.name) || (color === 'white' ? 'White' : 'Black');
+      if (profile && profile.photo) {
+        els.photo.src = profile.photo;
+        els.photo.style.display = 'block';
+        els.glyph.style.display = 'none';
+      } else {
+        els.photo.style.display = 'none';
+        els.glyph.style.display = 'block';
+      }
+      const catchphrase = profile && profile.catchphrase;
+      els.bubble.textContent = catchphrase ? '“' + catchphrase + '”' : '(no catchphrase set)';
+    });
+  }
+
   function renderBoardArea() {
     if (!latestState) return;
+
+    renderPlayersRow();
 
     // Detect a fresh game (rematch) starting after a previous game had moves — replay the intro.
     if (prevMoveCount > 0 && latestState.moveCount === 0) {

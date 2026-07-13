@@ -60,6 +60,112 @@
   .status-pill.check { border-color: var(--ember); color: var(--ember); }
   .status-pill.over { border-color: var(--sage); color: var(--sage); }
 
+  .players-row {
+    width: 100%;
+    max-width: 620px;
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .player-card {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    min-width: 0;
+  }
+  .player-avatar {
+    appearance: none;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--panel);
+    border: 2px solid var(--brass-dim);
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .player-avatar:hover { border-color: var(--brass); }
+  .player-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .player-info { min-width: 0; }
+  .player-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .player-color-pill {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-top: 3px;
+  }
+  .player-color-pill.white { background: var(--ivory); color: #221c10; }
+  .player-color-pill.black { background: #100d0a; color: var(--ivory); border: 1px solid var(--line); }
+
+  .speech-bubble {
+    position: absolute;
+    left: 12px;
+    bottom: calc(100% + 12px);
+    z-index: 5;
+    max-width: 240px;
+    width: max-content;
+    background: var(--panel);
+    border: 1px solid var(--brass-dim);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.4;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .speech-bubble.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+  .speech-bubble::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 18px;
+    border: 8px solid transparent;
+    border-top-color: var(--panel);
+  }
+  .speech-bubble::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 17px;
+    border: 9px solid transparent;
+    border-top-color: var(--brass-dim);
+    z-index: -1;
+  }
+
+  @media (max-width: 480px) {
+    .player-name { font-size: 12px; }
+    .player-avatar { width: 38px; height: 38px; font-size: 17px; }
+  }
+
   .board-wrap {
     position: relative;
     width: 100%;
@@ -637,6 +743,31 @@
       </button>
       <span class="badge" id="colorBadge">Connecting…</span>
       <button class="plaque-btn btn-ghost" id="soundSettingsBtn" title="Sound effects" style="padding:8px 12px; font-size:16px;">🔊</button>
+    </div>
+
+    <div class="players-row" id="playersRow">
+      <div class="player-card" id="playerCardWhite">
+        <button class="player-avatar" type="button" id="playerAvatarWhite">
+          <span id="playerGlyphWhite">♔</span>
+          <img id="playerPhotoWhite" style="display:none;" />
+        </button>
+        <div class="player-info">
+          <div class="player-name" id="playerNameWhite">White</div>
+          <div class="player-color-pill white">White</div>
+        </div>
+        <div class="speech-bubble" id="speechBubbleWhite"></div>
+      </div>
+      <div class="player-card" id="playerCardBlack">
+        <button class="player-avatar" type="button" id="playerAvatarBlack">
+          <span id="playerGlyphBlack">♚</span>
+          <img id="playerPhotoBlack" style="display:none;" />
+        </button>
+        <div class="player-info">
+          <div class="player-name" id="playerNameBlack">Black</div>
+          <div class="player-color-pill black">Black</div>
+        </div>
+        <div class="speech-bubble" id="speechBubbleBlack"></div>
+      </div>
     </div>
 
     <div class="status-pill" id="statusPill">Connecting to table…</div>
