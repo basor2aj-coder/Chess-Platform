@@ -223,6 +223,78 @@
   }
   .promo-choices button:hover { border-color: var(--brass); }
 
+  .sound-card {
+    background: var(--panel);
+    border: 1px solid var(--brass-dim);
+    border-radius: 12px;
+    padding: 22px;
+    width: 100%;
+    max-width: 420px;
+    max-height: 84vh;
+    overflow-y: auto;
+  }
+  .sound-modal-header { display: flex; align-items: center; gap: 10px; }
+  .sound-back-btn {
+    appearance: none;
+    background: none;
+    border: none;
+    color: var(--brass);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0;
+  }
+  .sound-cat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--brass-dim);
+    margin: 10px 2px -2px;
+  }
+  .sound-cat-label:first-child { margin-top: 0; }
+  .sound-list { display: flex; flex-direction: column; gap: 10px; }
+  .sound-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .sound-row.locked { opacity: 0.6; }
+  .sound-row .sound-glyph { font-size: 24px; width: 30px; text-align: center; flex-shrink: 0; }
+  .sound-row .sound-info { flex: 1; min-width: 0; }
+  .sound-row .sound-name { font-weight: 600; font-size: 14px; }
+  .sound-row .sound-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .sound-row .sound-status.custom { color: var(--sage); }
+  .sound-row .lock-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .sound-row .sound-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .sound-row .sound-actions button {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 12px;
+    padding: 7px 10px;
+  }
+  .sound-row .sound-actions button:hover { border-color: var(--brass-dim); }
+
   /* ---- Profile setup ---- */
   #profileSetup { width: 100%; max-width: 460px; }
   .avatar-row {
@@ -485,6 +557,7 @@
         <span class="plaque-code" id="codeText">······</span>
       </button>
       <span class="badge" id="colorBadge">Connecting…</span>
+      <button class="plaque-btn btn-ghost" id="soundSettingsBtn" title="Sound effects" style="padding:8px 12px; font-size:16px;">🔊</button>
     </div>
 
     <div class="status-pill" id="statusPill">Connecting to table…</div>
@@ -536,6 +609,18 @@
     <div class="promo-card">
       <div class="eyebrow">Promote pawn</div>
       <div class="promo-choices" id="promoChoices"></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="soundModal">
+    <div class="sound-card">
+      <div class="sound-modal-header">
+        <button class="sound-back-btn" id="soundBackBtn" style="display:none;">← Back</button>
+        <div class="eyebrow" id="soundModalTitle">Move sound effects</div>
+      </div>
+      <div class="hint" id="soundModalHint" style="margin-top:4px; margin-bottom:16px;"></div>
+      <div class="sound-list" id="soundList"></div>
+      <button class="btn-ghost" id="closeSoundModalBtn" style="width:100%; margin-top:16px;">Done</button>
     </div>
   </div>
 
