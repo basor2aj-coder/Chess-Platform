@@ -4,6 +4,9 @@
     w: { p: '♙', n: '♘', b: '♗', r: '♖', q: '♕', k: '♔' },
     b: { p: '♟', n: '♞', b: '♝', r: '♜', q: '♛', k: '♚' },
   };
+  const PIECE_VALUE = { p: 1, n: 3, b: 3, r: 5, q: 9 };
+  const STARTING_COUNTS = { p: 8, n: 2, b: 2, r: 2, q: 1 };
+  const CAPTURE_ORDER = ['q', 'r', 'b', 'n', 'p'];
   const PROFILE_STORAGE_KEY = 'table-chess-profile';
 
   // ---- DOM refs ----
@@ -29,6 +32,8 @@
   const codePlaque = document.getElementById('codePlaque');
   const codeText = document.getElementById('codeText');
   const colorBadge = document.getElementById('colorBadge');
+  const capturesTop = document.getElementById('capturesTop');
+  const capturesBottom = document.getElementById('capturesBottom');
   const waitingOverlay = document.getElementById('waitingOverlay');
   const waitingTitle = document.getElementById('waitingTitle');
   const waitingHint = document.getElementById('waitingHint');
@@ -348,6 +353,58 @@
     return FILES[boardCol] + (8 - boardRow);
   }
 
+  function computeCaptures(board) {
+    const counts = { w: { p: 0, n: 0, b: 0, r: 0, q: 0 }, b: { p: 0, n: 0, b: 0, r: 0, q: 0 } };
+    for (const row of board) {
+      for (const cell of row) {
+        if (cell && counts[cell.color] && counts[cell.color][cell.type] !== undefined) {
+          counts[cell.color][cell.type]++;
+        }
+      }
+    }
+    const capturedByWhite = {}; // black pieces removed from the board
+    const capturedByBlack = {}; // white pieces removed from the board
+    let whiteAdvantage = 0;
+    CAPTURE_ORDER.forEach((type) => {
+      const missingBlack = STARTING_COUNTS[type] - counts.b[type];
+      const missingWhite = STARTING_COUNTS[type] - counts.w[type];
+      capturedByWhite[type] = missingBlack;
+      capturedByBlack[type] = missingWhite;
+      whiteAdvantage += (missingBlack - missingWhite) * PIECE_VALUE[type];
+    });
+    return { capturedByWhite, capturedByBlack, whiteAdvantage };
+  }
+
+  function renderCapturedRow(el, capturedCounts, glyphColor, advantage) {
+    el.innerHTML = '';
+    CAPTURE_ORDER.forEach((type) => {
+      for (let i = 0; i < capturedCounts[type]; i++) {
+        const span = document.createElement('span');
+        span.className = 'piece cap-piece ' + (glyphColor === 'w' ? 'white' : 'black');
+        span.textContent = PIECE_GLYPH[glyphColor][type];
+        el.appendChild(span);
+      }
+    });
+    if (advantage > 0) {
+      const adv = document.createElement('span');
+      adv.className = 'cap-adv';
+      adv.textContent = '+' + advantage;
+      el.appendChild(adv);
+    }
+  }
+
+  function renderCaptures(board, orientedBlack) {
+    const { capturedByWhite, capturedByBlack, whiteAdvantage } = computeCaptures(board);
+    const bottomColor = orientedBlack ? 'b' : 'w';
+    const topColor = orientedBlack ? 'w' : 'b';
+    const bottomCaptured = bottomColor === 'w' ? capturedByWhite : capturedByBlack;
+    const topCaptured = topColor === 'w' ? capturedByWhite : capturedByBlack;
+    const bottomAdv = bottomColor === 'w' ? Math.max(whiteAdvantage, 0) : Math.max(-whiteAdvantage, 0);
+    const topAdv = topColor === 'w' ? Math.max(whiteAdvantage, 0) : Math.max(-whiteAdvantage, 0);
+    renderCapturedRow(capturesTop, topCaptured, topColor === 'w' ? 'b' : 'w', topAdv);
+    renderCapturedRow(capturesBottom, bottomCaptured, bottomColor === 'w' ? 'b' : 'w', bottomAdv);
+  }
+
   function renderBoardArea() {
     if (!latestState) return;
 
@@ -410,6 +467,19 @@
           sq.appendChild(piece);
         }
 
+        if (r === 7) {
+          const fileLabel = document.createElement('span');
+          fileLabel.className = 'coord file';
+          fileLabel.textContent = square[0];
+          sq.appendChild(fileLabel);
+        }
+        if (c === 0) {
+          const rankLabel = document.createElement('span');
+          rankLabel.className = 'coord rank';
+          rankLabel.textContent = square[1];
+          sq.appendChild(rankLabel);
+        }
+
         if (destSet.has(square)) {
           const marker = document.createElement('div');
           marker.className = cell ? 'ring' : 'dot';
@@ -426,6 +496,8 @@
         boardEl.appendChild(sq);
       }
     }
+
+    renderCaptures(latestState.board, orientedBlack);
 
     // Status pill
     statusPill.classList.remove('your-turn', 'check', 'over');

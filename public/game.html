@@ -99,8 +99,21 @@
   .sq.light { background: var(--ivory); }
   .sq.dark { background: var(--walnut); }
   .sq.selectable { cursor: pointer; }
-  .sq .piece.white { color: #fbf6ec; -webkit-text-stroke: 1.5px #241d15; paint-order: stroke fill; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.55)); }
-  .sq .piece.black { color: #241d15; filter: drop-shadow(0 1px 0 rgba(255,255,255,0.15)); }
+  .sq .coord {
+    position: absolute;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(8px, 1.6vw, 11px);
+    font-weight: 700;
+    line-height: 1;
+    pointer-events: none;
+    opacity: 0.75;
+  }
+  .sq .coord.file { right: 4px; bottom: 3px; }
+  .sq .coord.rank { left: 4px; top: 3px; }
+  .sq.light .coord { color: var(--walnut); }
+  .sq.dark .coord { color: var(--ivory); }
+  .sq .piece.white, .captures-row .piece.white { color: #fbf6ec; -webkit-text-stroke: 1.5px #241d15; paint-order: stroke fill; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.55)); }
+  .sq .piece.black, .captures-row .piece.black { color: #241d15; filter: drop-shadow(0 1px 0 rgba(255,255,255,0.15)); }
 
   .sq.selected::after {
     content: '';
@@ -149,6 +162,30 @@
     0% { transform: scale(0.8); opacity: 0.9; }
     70% { transform: scale(1.5); opacity: 0; }
     100% { opacity: 0; }
+  }
+
+  .captures-row {
+    width: 100%;
+    max-width: 620px;
+    min-height: 26px;
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 1px;
+    padding: 4px 10px;
+    background: var(--walnut);
+    border-radius: 6px;
+  }
+  .captures-row.top { margin-bottom: 8px; }
+  .captures-row.bottom { margin-top: 8px; }
+  .captures-row .cap-piece { font-size: 18px; line-height: 1; }
+  .captures-row .cap-adv {
+    margin-left: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--brass);
   }
 
   .below {
@@ -452,6 +489,8 @@
 
     <div class="status-pill" id="statusPill">Connecting to table…</div>
 
+    <div class="captures-row top" id="capturesTop"></div>
+
     <div class="board-wrap">
       <div class="board-frame">
         <div class="board" id="board"></div>
@@ -464,6 +503,8 @@
         </div>
       </div>
     </div>
+
+    <div class="captures-row bottom" id="capturesBottom"></div>
 
     <div class="below">
       <button class="btn-ghost" id="newGameBtn" style="display:none;">Start new game</button>
