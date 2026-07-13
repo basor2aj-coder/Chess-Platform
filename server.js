@@ -15,6 +15,14 @@ const wss = new WebSocketServer({ server });
 // code -> { chess, white: ws|null, black: ws|null, spectators: Set<ws>, profiles: { white, black } }
 const rooms = new Map();
 
+// Mirrors the free entries in public/js/game.js's SOUND_LIBRARY. Premium ids are deliberately
+// excluded so a modified client can't grant itself a locked sound by sending its id directly.
+const FREE_SOUND_IDS = new Set([
+  'cha-ching', 'coin-drop', 'whinny', 'gallop', 'chime', 'choir-pad',
+  'thud', 'drum-hit', 'fanfare', 'sparkle-run', 'firm-no', 'deep-horn',
+]);
+const DEFAULT_SOUND_ASSIGNMENT = { p: 'cha-ching', n: 'whinny', b: 'chime', r: 'thud', q: 'fanfare', k: 'firm-no' };
+
 // Letters/numbers with visually ambiguous characters removed (0/O, 1/I/L, etc.)
 const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
@@ -101,6 +109,7 @@ wss.on('connection', (ws) => {
         black: null,
         spectators: new Set(),
         profiles: { white: null, black: null },
+        soundAssignments: { white: {}, black: {} },
       });
       ws.roomCode = code;
       ws.color = 'white';
@@ -159,6 +168,20 @@ wss.on('connection', (ws) => {
       return;
     }
 
+    if (msg.type === 'set_sound_assignment') {
+      const room = rooms.get(ws.roomCode);
+      if (!room || (ws.color !== 'white' && ws.color !== 'black')) return;
+      const incoming = msg.assignment && typeof msg.assignment === 'object' ? msg.assignment : {};
+      const clean = {};
+      for (const [piece, soundId] of Object.entries(incoming)) {
+        if (Object.prototype.hasOwnProperty.call(DEFAULT_SOUND_ASSIGNMENT, piece) && FREE_SOUND_IDS.has(soundId)) {
+          clean[piece] = soundId;
+        }
+      }
+      room.soundAssignments[ws.color] = clean;
+      return;
+    }
+
     if (msg.type === 'move') {
       const room = rooms.get(ws.roomCode);
       if (!room) {
@@ -181,7 +204,14 @@ wss.on('connection', (ws) => {
         send(ws, { type: 'error', message: 'That move is not legal' });
         return;
       }
-      broadcastState(ws.roomCode, { from: move.from, to: move.to });
+      // The moving player's own sound choice travels with the move so every client
+      // (including the opponent) hears the mover's pick rather than their own.
+      const moverPieceType = move.promotion || move.piece;
+      const moverAssignment = room.soundAssignments[turnColor] || {};
+      const soundId = FREE_SOUND_IDS.has(moverAssignment[moverPieceType])
+        ? moverAssignment[moverPieceType]
+        : DEFAULT_SOUND_ASSIGNMENT[moverPieceType];
+      broadcastState(ws.roomCode, { from: move.from, to: move.to, soundId });
       return;
     }
 

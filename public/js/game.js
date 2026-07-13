@@ -263,6 +263,7 @@
       resetBtn.addEventListener('click', () => {
         delete soundAssignment[type];
         saveSoundAssignment();
+        sendSoundAssignment();
         renderPieceList();
       });
 
@@ -331,6 +332,7 @@
         selectBtn.addEventListener('click', () => {
           soundAssignment[pieceType] = entry.id;
           saveSoundAssignment();
+          sendSoundAssignment();
           renderPieceList();
         });
 
@@ -373,6 +375,12 @@
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const ws = new WebSocket(`${protocol}//${window.location.host}`);
 
+  function sendSoundAssignment() {
+    if (myColor !== 'white' && myColor !== 'black') return;
+    if (ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({ type: 'set_sound_assignment', assignment: soundAssignment }));
+  }
+
   ws.addEventListener('open', () => {
     if (action === 'join' && urlCode) {
       ws.send(JSON.stringify({ type: 'join_room', code: urlCode }));
@@ -406,6 +414,7 @@
       if (myColor === 'white' || myColor === 'black') {
         profileColorLabel.textContent = myColor === 'white' ? 'Your Profile — White' : 'Your Profile — Black';
       }
+      sendSoundAssignment();
       renderTopLevelVisibility();
       return;
     }
@@ -419,13 +428,23 @@
     }
 
     if (msg.type === 'state') {
-      const isNewMove = receivedFirstState && msg.lastMove && msg.moveCount > prevMoveCount;
-      const movedType = isNewMove ? (cellAt(msg.board, msg.lastMove.to) || {}).type : null;
+      // The mover's own sound choice comes from the server on msg.lastMove.soundId, so every
+      // client hears the sound the moving player picked rather than each client's own local
+      // assignment. The local lookup below only covers older/misbehaving payloads.
+      let moveSoundEntry = null;
+      if (receivedFirstState && msg.lastMove && msg.moveCount > prevMoveCount) {
+        const soundId = msg.lastMove.soundId;
+        moveSoundEntry = (soundId && SOUND_LIBRARY_BY_ID[soundId]) || null;
+        if (!moveSoundEntry) {
+          const movedType = (cellAt(msg.board, msg.lastMove.to) || {}).type;
+          if (movedType) moveSoundEntry = assignedEntryFor(movedType);
+        }
+      }
       latestState = msg;
       selected = null;
       renderTopLevelVisibility();
       renderBoardArea();
-      if (movedType) playPieceSound(movedType);
+      if (moveSoundEntry) playCatalogEntry(moveSoundEntry);
       prevMoveCount = latestState.moveCount;
       receivedFirstState = true;
       return;
