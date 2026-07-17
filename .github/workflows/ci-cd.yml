@@ -21,9 +21,14 @@ jobs:
 
   deploy:
     needs: build-and-test
-    if: >
-      github.ref == 'refs/heads/main' && github.event_name == 'push' &&
-      vars.DEPLOY_HOST != '' && secrets.DEPLOY_SSH_KEY != ''
+    # Only vars.* is usable here -- job-level `if:` conditions run before the
+    # secrets context is available, so secrets.DEPLOY_SSH_KEY can't be checked
+    # this way (GitHub rejects the whole workflow file if you try, with an
+    # "Unrecognized named-value: 'secrets'" parse error). If DEPLOY_SSH_KEY is
+    # unset while DEPLOY_HOST is set, this job runs anyway and fails at the
+    # SSH step instead of being skipped -- an acceptable tradeoff for a guard
+    # that can't reference the thing that actually matters.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.DEPLOY_HOST != ''
     runs-on: ubuntu-latest
     steps:
       - name: Deploy over SSH
