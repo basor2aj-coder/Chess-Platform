@@ -4,6 +4,7 @@
 // depend on everything) rather than here, keeping this module a leaf that
 // everything else can safely import without risking a cycle.
 import { statusPill } from './dom.js';
+import { SESSION_STORAGE_KEY } from './constants.js';
 
 const params = new URLSearchParams(window.location.search);
 export const action = params.get('action');
@@ -17,9 +18,23 @@ export function sendMessage(obj) {
   ws.send(JSON.stringify(obj));
 }
 
+// If this browser previously held a seat at this same table code, its
+// reconnect token lets join_room reclaim that seat instead of falling
+// through to spectator.
+function savedTokenFor(code) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SESSION_STORAGE_KEY) || 'null');
+    if (saved && saved.code === code && saved.token) return saved.token;
+  } catch {
+    // ignore malformed local storage
+  }
+  return null;
+}
+
 ws.addEventListener('open', () => {
   if (action === 'join' && urlCode) {
-    sendMessage({ type: 'join_room', code: urlCode });
+    const token = savedTokenFor(urlCode);
+    sendMessage(token ? { type: 'join_room', code: urlCode, token } : { type: 'join_room', code: urlCode });
   } else {
     sendMessage({ type: 'create_room' });
   }

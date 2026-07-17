@@ -15,3 +15,4 @@ export const PIECE_ORDER = ['p', 'n', 'b', 'r', 'q', 'k'];
 
 export const PROFILE_STORAGE_KEY = 'table-chess-profile';
 export const SOUND_STORAGE_KEY = 'table-chess-sounds';
+export const SESSION_STORAGE_KEY = 'table-chess-session';

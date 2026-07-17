@@ -5,6 +5,7 @@
 import './profile.js';
 import { codePlaque, codeText, colorBadge, profileColorLabel } from './dom.js';
 import { state, onStateChange, notifyStateChange } from './state.js';
+import { SESSION_STORAGE_KEY } from './constants.js';
 import { ws } from './ws.js';
 import { renderAll } from './render.js';
 import { clearSelection, cellAt } from './board.js';
@@ -33,6 +34,15 @@ ws.addEventListener('message', (evt) => {
 
     if (state.myColor === 'white' || state.myColor === 'black') {
       profileColorLabel.textContent = state.myColor === 'white' ? 'Your Profile — White' : 'Your Profile — Black';
+      if (msg.token) {
+        try {
+          localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ code: state.myCode, color: state.myColor, token: msg.token }));
+        } catch {
+          // storage full or unavailable — a refresh just won't reclaim the seat
+        }
+      }
+      // A reclaimed seat that already has a profile skips straight to the board.
+      state.myProfileSubmitted = !!msg.hasProfile;
     }
     sendSoundAssignment();
     notifyStateChange();
