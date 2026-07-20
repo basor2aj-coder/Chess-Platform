@@ -16,6 +16,10 @@ const app = express();
 app.set('trust proxy', 1);
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/healthz', (req, res) => res.sendStatus(200));
+app.get('/status', (req, res) => {
+  const activeRooms = [...rooms.values()].filter((room) => room.white || room.black).length;
+  res.json({ activeRooms });
+});
 
 const httpServer = http.createServer(app);
 
@@ -405,4 +409,4 @@ if (require.main === module) {
   })();
 }
 
-module.exports = { app, legalMovesMap, gameStatus, generateCode };
+module.exports = { app, legalMovesMap, gameStatus, generateCode, rooms };
