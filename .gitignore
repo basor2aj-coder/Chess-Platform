@@ -8,3 +8,4 @@ terraform/*.tfvars
 terraform/crash.log
 terraform/override.tf
 terraform/override.tf.json
+terraform/build/

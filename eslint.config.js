@@ -22,6 +22,21 @@ module.exports = [
     },
   },
   {
+    files: ['lambda/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'commonjs',
+      globals: {
+        process: 'readonly',
+        require: 'readonly',
+        module: 'writable',
+        exports: 'writable',
+        __dirname: 'readonly',
+        console: 'readonly',
+      },
+    },
+  },
+  {
     files: ['public/js/game/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
