@@ -23,6 +23,7 @@ resource "aws_lambda_function" "wake" {
       INSTANCE_ID    = aws_instance.table_chess.id
       HOSTED_ZONE_ID = data.aws_route53_zone.basorelabs.zone_id
       RECORD_NAME    = "chess.basorelabs.dev"
+      WAKE_SECRET    = var.wake_secret
     }
   }
 }

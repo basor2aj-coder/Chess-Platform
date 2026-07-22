@@ -28,4 +28,18 @@ resource "aws_instance" "table_chess" {
   tags = {
     Name = "table-chess"
   }
+
+  lifecycle {
+    # associate_public_ip_address reads back as false whenever the instance
+    # is actually stopped (no ENI association without an EIP, by design --
+    # see the no-EIP comment above), which no longer matches this being
+    # merely `true` at launch time now that idle auto-stop
+    # (lambda_idle_check.tf) means the box spends most of its time stopped.
+    # Without this, `terraform apply` run at the wrong moment would see that
+    # as drift on a forces-replacement attribute and destroy/recreate the
+    # live instance. Same category of problem as the DNS record ownership
+    # split in dns.tf -- a runtime-toggled attribute that Terraform must stop
+    # trying to reconcile.
+    ignore_changes = [associate_public_ip_address]
+  }
 }

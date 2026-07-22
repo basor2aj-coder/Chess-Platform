@@ -33,6 +33,7 @@ module.exports = [
         exports: 'writable',
         __dirname: 'readonly',
         console: 'readonly',
+        Buffer: 'readonly',
       },
     },
   },

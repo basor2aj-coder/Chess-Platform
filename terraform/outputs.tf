@@ -27,3 +27,10 @@ output "api_gateway_domain_target" {
 output "github_actions_deploy_role_arn" {
   value = aws_iam_role.github_actions_deploy.arn
 }
+
+# Bookmark this -- it's the only URL that can actually start the instance
+# while it's stopped. `terraform output -raw wake_url` to print it in full.
+output "wake_url" {
+  value     = "https://chess.basorelabs.dev/?key=${var.wake_secret}"
+  sensitive = true
+}
